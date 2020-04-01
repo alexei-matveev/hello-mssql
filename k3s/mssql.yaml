@@ -1,0 +1,48 @@
+#
+# kubectl apply -k .
+#
+# See MS Docs [1].
+#
+# [1] https://docs.microsoft.com/en-us/sql/linux/quickstart-install-connect-docker
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: mssql
+  template:
+    metadata:
+      labels:
+        component: mssql
+    spec:
+      containers:
+        # docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=<YourStrong@Passw0rd>" \
+        #    -p 1433:1433 --name sql1 \
+        #    -d mcr.microsoft.com/mssql/server:2019-CU3-ubuntu-18.04
+      - name: mssql
+        image: mcr.microsoft.com/mssql/server:2019-CU3-ubuntu-18.04
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 1433
+        env:
+        - name: "ACCEPT_EULA"
+          value: "Y"
+        - name: "SA_PASSWORD"
+          value: "YourStrong@Passw0rd"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mssql
+spec:
+  type: ClusterIP
+  selector:
+    component: mssql
+  ports:
+  - port: 1433
+    targetPort: 1433
+...
